@@ -5,7 +5,8 @@ use crate::{
     expr::Expr,
     function::FuncDef,
     val::Val,
-    for_loop::ForLoop
+    for_loop::ForLoop,
+    if_statement::IfStmt
 };
 
 #[derive(PartialEq, Debug, Clone)]
@@ -14,7 +15,8 @@ pub(crate) enum Stmt {
     Expr(Expr),
     FuncDef(FuncDef),
     ChangeStatment(ChangeStatement),
-    ForLoop(ForLoop)
+    ForLoop(ForLoop),
+    IfStmt(IfStmt)
 }
 
 impl Stmt {
@@ -24,6 +26,7 @@ impl Stmt {
             .or_else(|_| FuncDef::new(s).map(|(s, func_def)| (s, Self::FuncDef(func_def))))
             .or_else(|_| ChangeStatement::new(s).map(|(s, stmt)| (s, Self::ChangeStatment(stmt))))
             .or_else(|_| ForLoop::new(s).map(|(s, lp)| (s, Self::ForLoop(lp))))
+            .or_else(|_| IfStmt::new(s).map(|(s, stmt)| (s, Self::IfStmt(stmt))))
             .or_else(|_| Expr::new(s).map(|(s, expr)| (s, Self::Expr(expr))))
     }
 
@@ -39,7 +42,8 @@ impl Stmt {
                 Ok(Val::Unit)
             }
             Self::ChangeStatment(stmt) => stmt.eval(env),
-            Self::ForLoop(lp) => lp.eval(env)
+            Self::ForLoop(lp) => lp.eval(env),
+            Self::IfStmt(stmt) => stmt.eval(env)
         }
     }
 }
