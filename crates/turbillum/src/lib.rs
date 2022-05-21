@@ -8,6 +8,7 @@ mod statements;
 mod val;
 mod for_condition;
 mod if_statement;
+mod while_loop;
 
 mod env;
 mod utils;
