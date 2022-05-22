@@ -1,11 +1,13 @@
 use crate::boolean_expr::Boolean;
 use crate::expr::block::Block;
 use crate::utils;
+use crate::env::Env;
+use crate::val::Val;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct WhileLoop {
-    condition: Boolean, 
-    body: Block
+    condition: Boolean,
+    body: Block,
 }
 
 impl WhileLoop {
@@ -22,14 +24,31 @@ impl WhileLoop {
 
         let s = utils::tag("]", s)?;
 
-        let (s, _)  = utils::extract_whitespace(s);
+        let (s, _) = utils::extract_whitespace(s);
 
         let (s, body) = Block::new(s)?;
 
         Ok((s, Self {
             body,
-            condition
+            condition,
         }))
+    }
+
+    pub(crate) fn eval(&self, env: &mut Env) -> Result<Val, String> {
+        let mut val = match self.condition.eval(env) {
+            Err(_) => false,
+            Ok(Val(bool)) => bool
+        };
+
+        while val {
+            self.body.eval(env)?;
+            val = match self.condition.eval(env) {
+                Err(_) => false,
+                Ok(Val(bool)) => bool
+            };
+        }
+
+        Ok(Val::Unit)
     }
 }
 
@@ -46,11 +65,11 @@ mod tests {
             condition: Boolean::Comparison(Comparison {
                 lhs: Expr::Number(Number(1)),
                 rhs: Expr::Number(Number(2)),
-                op: ComparisonOp::Geq
+                op: ComparisonOp::Geq,
             }),
             body: Block {
                 stmts: Vec::new()
-            }
+            },
         })));
     }
 }
