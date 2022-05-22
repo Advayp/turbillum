@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::statements::Stmt;
-use crate::turbillum_library::FunctionType;
+use crate::turbillum_library::{FunctionType, Library};
 use crate::val::Val;
 
 #[derive(Debug, PartialEq, Default)]
@@ -13,7 +13,7 @@ pub struct Env<'parent> {
 #[derive(Debug, PartialEq, Clone)]
 enum NamedInfo {
     Binding(Val),
-    Func(FunctionType),
+    Func {params: Vec<String>, body: Stmt},
 }
 
 impl<'parent> Env<'parent> {
@@ -28,7 +28,7 @@ impl<'parent> Env<'parent> {
     }
 
     pub(crate) fn store_func(&mut self, name: String, params: Vec<String>, body: Stmt) {
-        self.named.insert(name, NamedInfo::Func(FunctionType { params, body }));
+        self.named.insert(name, NamedInfo::Func {params, body});
     }
 
     pub(crate) fn get_func(&self, name: &str) -> Result<(Vec<String>, Stmt), String> {
@@ -62,6 +62,14 @@ impl<'parent> Env<'parent> {
         Ok(new_val)
     }
 
+    pub(crate) fn import(&mut self, library: Library) -> Result<(), String> {
+        for (name, params, body) in library.functions {
+            self.named.insert(name, NamedInfo::Func {params, body});
+        }
+
+        Ok(())
+    }
+
     fn get_named_info(&self, name: &str) -> Option<NamedInfo> {
         self.named
             .get(name)
@@ -80,7 +88,7 @@ impl NamedInfo {
     }
 
     fn into_func(self) -> Option<(Vec<String>, Stmt)> {
-        if let Self::Func(FunctionType { params, body }) = self {
+        if let Self::Func { params, body } = self {
             Some((params, body))
         } else {
             None
