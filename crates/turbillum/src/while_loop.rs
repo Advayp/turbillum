@@ -37,11 +37,12 @@ impl WhileLoop {
     pub(crate) fn eval(&self, env: &mut Env) -> Result<Val, String> {
         let mut val = match self.condition.eval(env) {
             Err(_) => false,
-            Ok(Val(bool)) => bool
+            Ok(Val::Bool(bool)) => bool,
+            _ => true
         };
 
         while val {
-            self.body.eval(env)?;
+            self.body.eval_with_parent_env(env)?;
             val = match self.condition.eval(env) {
                 Err(_) => false,
                 Ok(Val::Bool(bool)) => bool,
@@ -56,8 +57,12 @@ impl WhileLoop {
 #[cfg(test)]
 mod tests {
     use crate::boolean_expr::{Boolean, Comparison, ComparisonOp};
+    use crate::{Env, Val};
+    use crate::change_statement::ChangeStatement;
     use crate::expr::block::Block;
-    use crate::expr::{Expr, Number};
+    use crate::expr::{Expr, Number, Op};
+    use crate::expr::binding_usage::BindingUsage;
+    use crate::statements::Stmt;
     use super::WhileLoop;
 
     #[test]
@@ -72,5 +77,60 @@ mod tests {
                 stmts: Vec::new()
             },
         })));
+    }
+
+    #[test]
+    fn eval_while_loop() {
+        assert_eq!(WhileLoop {
+            condition: Boolean::Comparison(Comparison {
+                lhs: Expr::Number(Number(1)),
+                rhs: Expr::Number(Number(2)),
+                op: ComparisonOp::Geq,
+            }),
+            body: Block {
+                stmts: Vec::new()
+            },
+        }.eval(&mut Env::default()), Ok(Val::Unit));
+    }
+
+    #[test]
+    fn eval_while_loop_body() {
+        let mut env = Env::default();
+
+        env.store_binding("a".to_string(), Val::Number(0));
+        env.store_binding("b".to_string(), Val::Number(0));
+
+       WhileLoop {
+            condition: Boolean::Comparison(Comparison {
+                lhs: Expr::BindingUsage(BindingUsage {
+                    name: "a".to_string()
+                }),
+                rhs: Expr::Number(Number(4)),
+                op: ComparisonOp::Lt,
+            }),
+            body: Block {
+                stmts: vec![Stmt::ChangeStatment(ChangeStatement {
+                    name: "a".to_string(),
+                    new_expr: Expr::Operation {
+                        lhs: Box::new(Expr::BindingUsage(BindingUsage {
+                            name: "a".to_string()
+                        })),
+                        rhs: Box::new(Expr::Number(Number(1))),
+                        op: Op::Add
+                    }
+                }), Stmt::ChangeStatment(ChangeStatement {
+                    name: "b".to_string(),
+                    new_expr: Expr::Operation {
+                        lhs: Box::new(Expr::BindingUsage(BindingUsage {
+                            name: "b".to_string()
+                        })),
+                        rhs: Box::new(Expr::Number(Number(1))),
+                        op: Op::Add
+                    }
+                })]
+            },
+        }.eval(&mut env).unwrap();
+
+        assert_eq!(env.get_binding("b"), Ok(Val::Number(4)));
     }
 }
