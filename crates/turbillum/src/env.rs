@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::statements::Stmt;
+use crate::turbillum_library::FunctionType;
 use crate::val::Val;
 
 #[derive(Debug, PartialEq, Default)]
@@ -12,7 +13,7 @@ pub struct Env<'parent> {
 #[derive(Debug, PartialEq, Clone)]
 enum NamedInfo {
     Binding(Val),
-    Func { params: Vec<String>, body: Stmt },
+    Func(FunctionType),
 }
 
 impl<'parent> Env<'parent> {
@@ -27,7 +28,7 @@ impl<'parent> Env<'parent> {
     }
 
     pub(crate) fn store_func(&mut self, name: String, params: Vec<String>, body: Stmt) {
-        self.named.insert(name, NamedInfo::Func { params, body });
+        self.named.insert(name, NamedInfo::Func(FunctionType { params, body }));
     }
 
     pub(crate) fn get_func(&self, name: &str) -> Result<(Vec<String>, Stmt), String> {
@@ -79,7 +80,7 @@ impl NamedInfo {
     }
 
     fn into_func(self) -> Option<(Vec<String>, Stmt)> {
-        if let Self::Func { params, body } = self {
+        if let Self::Func(FunctionType { params, body }) = self {
             Some((params, body))
         } else {
             None

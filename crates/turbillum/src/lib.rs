@@ -9,6 +9,7 @@ mod val;
 mod for_condition;
 mod if_statement;
 mod while_loop;
+mod turbillum_library;
 
 mod env;
 mod utils;
