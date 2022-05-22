@@ -44,7 +44,8 @@ impl WhileLoop {
             self.body.eval(env)?;
             val = match self.condition.eval(env) {
                 Err(_) => false,
-                Ok(Val(bool)) => bool
+                Ok(Val::Bool(bool)) => bool,
+                _ => true
             };
         }
 
