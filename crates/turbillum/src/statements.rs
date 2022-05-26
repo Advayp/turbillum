@@ -16,7 +16,7 @@ pub(crate) enum Stmt {
     FuncDef(FuncDef),
     ChangeStatment(ChangeStatement),
     ForLoop(ForLoop),
-    IfStmt(IfStmt)
+    IfStmt(IfStmt),
 }
 
 impl Stmt {
@@ -43,7 +43,7 @@ impl Stmt {
             }
             Self::ChangeStatment(stmt) => stmt.eval(env),
             Self::ForLoop(lp) => lp.eval(env),
-            Self::IfStmt(stmt) => stmt.eval(env)
+            Self::IfStmt(stmt) => stmt.eval(env),
         }
     }
 }

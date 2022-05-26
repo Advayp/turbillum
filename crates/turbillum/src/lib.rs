@@ -10,6 +10,7 @@ mod for_condition;
 mod if_statement;
 mod while_loop;
 mod turbillum_library;
+mod standard_lib;
 
 mod env;
 mod utils;

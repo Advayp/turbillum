@@ -19,16 +19,12 @@ impl FuncDef {
             |s| utils::extract_ident(s).map(|(s, ident)| (s, ident.to_string())),
             s,
         )?;
-        dbg!(s);
-
         let s = utils::tag("|", s)?;
         let (s, _) = utils::extract_whitespace(s);
         let s = utils::tag("=>", s)?;
         let (s, _) = utils::extract_whitespace(s);
 
         let (s, body) = Stmt::new(s)?;
-
-        dbg!(s);
 
         Ok((
             s,

@@ -10,6 +10,7 @@ pub struct Env<'parent> {
     parent: Option<&'parent Self>,
 }
 
+
 #[derive(Debug, PartialEq, Clone)]
 enum NamedInfo {
     Binding(Val),
@@ -60,14 +61,6 @@ impl<'parent> Env<'parent> {
         }
 
         Ok(new_val)
-    }
-
-    pub(crate) fn import(&mut self, library: Library) -> Result<(), String> {
-        for (name, params, body) in library.functions {
-            self.named.insert(name, NamedInfo::Func {params, body});
-        }
-
-        Ok(())
     }
 
     fn get_named_info(&self, name: &str) -> Option<NamedInfo> {

@@ -100,7 +100,7 @@ mod tests {
         env.store_binding("a".to_string(), Val::Number(0));
         env.store_binding("b".to_string(), Val::Number(0));
 
-       WhileLoop {
+        WhileLoop {
             condition: Boolean::Comparison(Comparison {
                 lhs: Expr::BindingUsage(BindingUsage {
                     name: "a".to_string()
