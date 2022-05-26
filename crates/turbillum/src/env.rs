@@ -10,6 +10,14 @@ pub struct Env<'parent> {
     parent: Option<&'parent Self>,
 }
 
+#[derive(Default, Clone)]
+pub struct RustFuncs<T>
+where
+    T: Fn(Vec<String>) -> Result<Val, String>
+{
+    named: HashMap<String, T>
+}
+
 
 #[derive(Debug, PartialEq, Clone)]
 enum NamedInfo {
@@ -71,6 +79,27 @@ impl<'parent> Env<'parent> {
     }
 }
 
+impl<T> RustFuncs<T>
+where
+T: Fn(Vec<String>) -> Result<Val, String> + std::clone::Clone
+{
+    pub(crate) fn store_func(&mut self, name: String, func: T) -> Result<Val, String> {
+        self.named.insert(name, func);
+        Ok(Val::Unit)
+    }
+
+    fn get_named_info(&self, name: &str) -> Option<T> {
+        self.named
+            .get(name)
+            .cloned()
+    }
+
+    pub(crate) fn get_func(&self, name: &str) -> Result<T, String> {
+        self.get_named_info(name)
+            .ok_or_else(|| format!("function with name ‘{}’ does not exist", name))
+    }
+}
+
 impl NamedInfo {
     fn into_binding(self) -> Option<Val> {
         if let Self::Binding(val) = self {
@@ -88,3 +117,4 @@ impl NamedInfo {
         }
     }
 }
+
